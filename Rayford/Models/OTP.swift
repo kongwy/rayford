@@ -10,12 +10,16 @@ import CryptoKit
 
 // Ref: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 
-struct Account {
+struct Account: Identifiable {
+    let id: UUID
     var name: String?
     var issuer: String?
     let password: Password
 
-    init(name: String? = nil, issuer: String? = nil, password: Password) {
+    var displayName: String { [issuer, name].compactMap { $0 }.joined(separator: ": ") }
+
+    init(id: UUID = UUID(), name: String? = nil, issuer: String? = nil, password: Password) {
+        self.id = id
         self.name = name
         self.issuer = issuer
         self.password = password
@@ -31,6 +35,7 @@ struct Account {
               queryItems.count > 0
         else { return nil }
 
+        id = UUID()
         name = labelComponents.last?.trimmingCharacters(in: CharacterSet.whitespaces)
         issuer = labelComponents.count > 1 ? labelComponents.first : nil
 
@@ -101,6 +106,18 @@ struct Password {
         let mod = UInt(pow(10, Float(digits)))
         return String(format: "%0\(digits)d", truncated % mod)
     }
+
+    var timeIntervalRemaining: Double {
+        guard case let .totp(period) = kind else { return 0 }
+        return Double(period) - Date.now.timeIntervalSince1970.truncatingRemainder(dividingBy: Double(period))
+    }
+
+    var progress: Double {
+        guard case let .totp(period) = kind else { return 0 }
+        return timeIntervalRemaining / Double(period)
+    }
+
+    var secondsRemaining: Int { Int(timeIntervalRemaining) }
 
     init(kind: Kind, algorithm: Algorithm? = nil, secret: Data, digits: UInt? = nil) {
         self.kind = kind

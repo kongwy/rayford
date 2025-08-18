@@ -11,7 +11,9 @@ import SwiftUI
 struct RayfordApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                AccountsView(accounts: mockAccounts)
+            }
         }
     }
 }
