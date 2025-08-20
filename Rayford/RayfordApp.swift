@@ -9,11 +9,14 @@ import SwiftUI
 
 @main
 struct RayfordApp: App {
+    var store = Store.shared
+
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                AccountsView(accounts: mockAccounts)
+            NavigationView {
+                AccountsView()
             }
+            .environmentObject(store)
         }
     }
 }

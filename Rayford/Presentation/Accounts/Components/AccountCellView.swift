@@ -1,27 +1,15 @@
 //
-//  AccountsView.swift
+//  AccountCellView.swift
 //  Rayford
 //
-//  Created by Weiyi Kong on 15/8/2025.
+//  Created by Weiyi Kong on 20/8/2025.
 //
 
 import SwiftUI
 
-struct AccountsView: View {
-    var accounts: [Account]
-
-    var body: some View {
-        List(accounts) { account in
-            AccountCellView(account: account)
-        }
-        .listStyle(.grouped)
-        .navigationTitle("Accounts")
-    }
-}
-
 struct AccountCellView: View {
-    var account: Account
-
+    var model: Model
+    
     var body: some View {
         HStack {
             Image(systemName: "person.fill")
@@ -32,22 +20,25 @@ struct AccountCellView: View {
                 .foregroundStyle(.white)
                 .background(.gray)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
-
+            
             VStack(alignment: .leading) {
-                Text(formattedValue(account.password.value))
+                Text(formattedValue(model.passcode))
                     .font(.system(size: 44, weight: .thin))
                     .lineLimit(1)
                     .monospacedDigit()
-
-                Text(account.displayName)
+                
+                Text(model.description)
                     .font(.system(size: 15, weight: .medium))
                     .lineLimit(1)
             }
-
+            
             Spacer()
-
-            switch account.password.kind {
-            case .hotp:
+            
+            switch model.accessoryType {
+            case let .progressCircle(value, text):
+                CircularProgressView(progress: value, text: text)
+                    .frame(width: 30, height: 30)
+            case .nextButton:
                 Image(systemName: "arrowtriangle.forward.fill")
                     .resizable()
                     .scaledToFit()
@@ -55,16 +46,12 @@ struct AccountCellView: View {
                     .offset(x: 1)
                     .frame(width: 28, height: 28)
                     .foregroundStyle(.white)
-                    .background(.link)
+                    .background(.blue)
                     .clipShape(Circle())
-            case .totp:
-                CircularProgressView(progress: account.password.progress,
-                                     text: "\(account.password.secondsRemaining)")
-                    .frame(width: 30, height: 30)
             }
         }
     }
-
+    
     private func formattedValue(_ value: String) -> String {
         let length = value.count
         let prefix = String(value.prefix(length / 2))
@@ -73,8 +60,20 @@ struct AccountCellView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        AccountsView(accounts: mockAccounts)
+extension AccountCellView {
+    struct Model: Identifiable {
+        var id: UUID
+        var passcode: String
+        var description: String
+        var accessoryType: AccessoryType
+    }
+
+    enum AccessoryType {
+        case progressCircle(value: Double, text: String)
+        case nextButton(_: () -> Void)
     }
 }
+
+//#Preview {
+//    AccountCellView(account: mockState.accounts[0])
+//}
