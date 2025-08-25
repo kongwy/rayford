@@ -8,49 +8,42 @@
 import SwiftUI
 
 struct AddAccountView: View {
-    @State private var name: String = ""
-    @State private var issuer: String = ""
-    @State private var secret: String = ""
-    @State private var algorithm: Algorithm = .sha1
-    @State private var digits: UInt = 6
-    @State private var kind: Kind = .totp(period: 30)
-    @State private var period: UInt = 30
-    @State private var counter: UInt = 0
+    @StateObject private var viewModel = ViewModel()
 
     var body: some View {
         Form {
             Section("Display") {
-                TextField("Name", text: $name)
-                TextField("Issuer", text: $issuer)
+                TextField("Name", text: $viewModel.name)
+                TextField("Issuer", text: $viewModel.issuer)
             }
 
             Section("Details") {
-                TextField("Secret", text: $secret)
-                Picker("Algorithm", selection: $algorithm) {
+                TextField("Secret", text: $viewModel.secret)
+                Picker("Algorithm", selection: $viewModel.algorithm) {
                     Text("SHA1").tag(Algorithm.sha1)
                     Text("SHA256").tag(Algorithm.sha256)
                     Text("SHA512").tag(Algorithm.sha512)
                 }
-                Stepper(value: $digits) {
-                    Text("\(digits) digit(s)")
+                Stepper(value: $viewModel.digits) {
+                    Text("\(viewModel.digits) digit(s)")
                 }
-                Picker("Type", selection: $kind) {
-                    Text("TOTP").tag(Kind.totp(period: period))
-                    Text("HOTP").tag(Kind.hotp(counter: counter))
+                Picker("Type", selection: $viewModel.kind) {
+                    Text("TOTP").tag(Kind.totp(period: viewModel.period))
+                    Text("HOTP").tag(Kind.hotp(counter: viewModel.counter))
                 }
-                switch kind {
+                switch viewModel.kind {
                 case .totp:
                     HStack {
                         Text("Period")
                         Spacer()
-                        TextField("30", value: $period, format: .number)
+                        TextField("30", value: $viewModel.period, format: .number)
                             .multilineTextAlignment(.trailing)
                     }
                 case .hotp:
                     HStack {
                         Text("Counter")
                         Spacer()
-                        TextField("0", value: $counter, format: .number)
+                        TextField("0", value: $viewModel.counter, format: .number)
                             .multilineTextAlignment(.trailing)
                     }
                 }
@@ -59,14 +52,36 @@ struct AddAccountView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
-                    print("Cancel tapped!")
+                    viewModel.cancel()
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Done") {
-                    print("Done tapped!")
+                    viewModel.save()
                 }
             }
+        }
+    }
+}
+
+extension AddAccountView {
+    class ViewModel: ObservableObject {
+        @Published var name: String = ""
+        @Published var issuer: String = ""
+        @Published var secret: String = ""
+        @Published var algorithm: Algorithm = .sha1
+        @Published var digits: UInt = 6
+        @Published var kind: Kind = .totp(period: 30)
+        @Published var period: UInt = 30
+        @Published var counter: UInt = 0
+
+        func cancel() {
+            print("Cancel tapped!")
+        }
+
+        func save() {
+            print("Done tapped!")
+            print("\(self)")
         }
     }
 }
