@@ -66,7 +66,7 @@ struct Password: Equatable {
     }
 }
 
-enum Kind: Equatable {
+enum Kind: Equatable, Hashable {
     case hotp(counter: UInt)
     case totp(period: UInt = 30)
 }
