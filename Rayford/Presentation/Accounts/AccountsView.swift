@@ -14,6 +14,12 @@ struct AccountsView: View {
     var body: some View {
         List(viewModel.cellModels) { model in
             AccountCellView(model: model)
+                .contextMenu {
+                    Button("Edit", systemImage: "pencil") {
+                        viewModel.editingAccountId = model.id
+                        viewModel.presentEditAccountView = true
+                    }
+                }
         }
         .listStyle(.grouped)
         .toolbar {
@@ -27,12 +33,17 @@ struct AccountsView: View {
         .sheet(isPresented: $viewModel.presentAddAccountView) {
             AddAccountView()
         }
+        .navigationDestination(isPresented: $viewModel.presentEditAccountView) {
+            if let accountId = viewModel.editingAccountId,
+               let viewModel = EditAccountView.ViewModel(id: accountId, in: store) {
+                EditAccountView(viewModel: viewModel)
+            }
+        }
     }
 }
 
 #Preview {
     NavigationView {
         AccountsView()
-            .environmentObject(mockStore)
     }
 }

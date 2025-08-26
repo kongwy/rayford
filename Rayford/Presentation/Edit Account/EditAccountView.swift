@@ -21,11 +21,6 @@ struct EditAccountView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    dismiss()
-                }
-            }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Done") {
                     viewModel.save(in: store)
@@ -48,7 +43,14 @@ extension EditAccountView {
             self.issuer = account.issuer ?? ""
         }
 
-        func save(in store: Store) {
+        init?(id: UUID, in store: Store = .shared) {
+            guard let account = store.appState.accounts[id: id] else { return nil }
+            self.id = account.id
+            self.name = account.name ?? ""
+            self.issuer = account.issuer ?? ""
+        }
+
+        func save(in store: Store = .shared) {
             store.appState.accounts.update(id: id) { account in
                 account.name = name
                 account.issuer = issuer

@@ -12,6 +12,8 @@ extension AccountsView {
     class ViewModel: ObservableObject {
         private var passwordManager: PasswordManager
 
+        @Published var presentEditAccountView = false
+        @Published var editingAccountId: UUID? = nil
         @Published var presentAddAccountView = false
         @Published var cellModels = [AccountCellView.Model]()
 
