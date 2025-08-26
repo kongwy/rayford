@@ -25,7 +25,7 @@ struct AccountsView: View {
         }
         .navigationTitle("Accounts")
         .sheet(isPresented: $viewModel.presentAddAccountView) {
-            AddAccountView(viewModel: .init(isPresented: $viewModel.presentAddAccountView))
+            AddAccountView()
         }
     }
 }

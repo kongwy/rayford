@@ -9,8 +9,6 @@ import SwiftUI
 
 extension AddAccountView {
     class ViewModel: ObservableObject {
-        @Binding var isPresented: Bool
-
         @Published var name: String = ""
         @Published var issuer: String = ""
         @Published var secret: String = ""
@@ -20,19 +18,10 @@ extension AddAccountView {
         @Published var period: UInt = 30
         @Published var counter: UInt = 0
 
-        init(isPresented: Binding<Bool>) {
-            self._isPresented = isPresented
-        }
-
-        func cancel() {
-            isPresented = false
-        }
-
         func save(in store: Store) {
             guard let password = Password(kind: kind, algorithm: algorithm, base32: secret, digits: digits) else { return }
             let newAccount = Account(name: name, issuer: issuer, password: password)
             store.appState.accounts.append(newAccount)
-            isPresented = false
         }
     }
 }

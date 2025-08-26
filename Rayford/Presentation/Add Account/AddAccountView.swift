@@ -9,7 +9,8 @@ import SwiftUI
 
 struct AddAccountView: View {
     @EnvironmentObject var store: Store
-    @StateObject var viewModel: ViewModel
+    @StateObject var viewModel = ViewModel()
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         NavigationStack {
@@ -55,12 +56,13 @@ struct AddAccountView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        viewModel.cancel()
+                        dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         viewModel.save(in: store)
+                        dismiss()
                     }
                 }
             }
@@ -71,9 +73,7 @@ struct AddAccountView: View {
 
 
 #Preview {
-    @State var isPresented = true
-
     NavigationView {
-        AddAccountView(viewModel: .init(isPresented: $isPresented))
+        AddAccountView()
     }
 }
