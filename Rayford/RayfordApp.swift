@@ -13,7 +13,7 @@ struct RayfordApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationView {
+            NavigationStack {
                 AccountsView()
             }
             .environmentObject(store)

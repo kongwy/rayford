@@ -11,7 +11,7 @@ struct AddAccountView: View {
     @StateObject var viewModel: ViewModel
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section("Display") {
                     TextField("Name", text: $viewModel.name)
