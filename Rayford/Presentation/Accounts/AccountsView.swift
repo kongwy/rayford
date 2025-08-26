@@ -19,16 +19,13 @@ struct AccountsView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Add", systemImage: "plus.circle") {
-                    viewModel.showAddAccountView.toggle()
+                    viewModel.presentAddAccountView = true
                 }
             }
         }
         .navigationTitle("Accounts")
-        .sheet(isPresented: $viewModel.showAddAccountView) {
-            AddAccountView(viewModel: .init(isPresented: $viewModel.showAddAccountView))
-        }
-        .onAppear {
-            viewModel.setup(with: store)
+        .sheet(isPresented: $viewModel.presentAddAccountView) {
+            AddAccountView(viewModel: .init(isPresented: $viewModel.presentAddAccountView))
         }
     }
 }

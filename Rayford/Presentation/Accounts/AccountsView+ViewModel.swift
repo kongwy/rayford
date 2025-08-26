@@ -5,36 +5,40 @@
 //  Created by Weiyi Kong on 20/8/2025.
 //
 
-import Foundation
 import SwiftUI
+import Combine
 
 extension AccountsView {
     class ViewModel: ObservableObject {
-        private var accounts = [Account]()
-        @Published var showAddAccountView = false
+        private var passwordManager: PasswordManager
+
+        @Published var presentAddAccountView = false
         @Published var cellModels = [AccountCellView.Model]()
-        private var timer: Timer!
 
-        init() { }
+        private var cancellable = Set<AnyCancellable>()
 
-        func setup(with store: Store) {
-            accounts = store.appState.accounts
-            cellModels = accounts.map(Self.cellModel(for:))
-            timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-                guard let self else { return }
-                self.cellModels = self.accounts.map(Self.cellModel(for:))
-            }
-        }
-
-        static func cellModel(for account: Account) -> AccountCellView.Model {
-            let accessoryType: AccountCellView.AccessoryType = switch account.password.kind {
-            case .hotp: .nextButton {  }
-            case .totp: .progressCircle(value: account.password.progress(), text: "\(account.password.secondsRemaining())")
-            }
-            return AccountCellView.Model(id: account.id,
-                                         passcode: account.password.value(),
-                                         description: account.displayName,
-                                         accessoryType: accessoryType)
+        init(with store: Store = .shared) {
+            passwordManager = PasswordManager(store: store)
+            store.publisher(\.accounts)
+                .combineLatest(passwordManager.passcodes, passwordManager.progresses, passwordManager.secondsRemainings)
+                .sink { [weak self] accounts, passcodes, progresses, secondsRemainings in
+                    self?.cellModels = accounts.map { account in
+                        guard let passcode = passcodes[account.id] else { assert(false) }
+                        let accessoryType: AccountCellView.AccessoryType
+                        switch account.password.kind {
+                        case .hotp:
+                            accessoryType = .nextButton {}
+                        case .totp:
+                            guard let progress = progresses[account.id], let secondsRemaining = secondsRemainings[account.id] else { assert(false) }
+                            accessoryType = .progressCircle(value: progress, text: "\(secondsRemaining)")
+                        }
+                        return AccountCellView.Model(id: account.id,
+                                                     passcode: passcode,
+                                                     description: account.displayName,
+                                                     accessoryType: accessoryType)
+                    }
+                }
+                .store(in: &cancellable)
         }
     }
 }

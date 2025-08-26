@@ -22,8 +22,12 @@ struct Password: Equatable {
     }
 
     func value(at date: Date = Date.now) -> String {
+        value(for: counter(at: date))
+    }
+
+    func value(for counter: UInt) -> String {
         let key = SymmetricKey(data: secret)
-        var input = counter(at: date).bigEndian
+        var input = counter.bigEndian
         let counter = withUnsafeBytes(of: &input) { Data($0) }
 
         let macData: Data = switch algorithm {
