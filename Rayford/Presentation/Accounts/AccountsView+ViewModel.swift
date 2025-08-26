@@ -11,6 +11,7 @@ import SwiftUI
 extension AccountsView {
     class ViewModel: ObservableObject {
         private var accounts = [Account]()
+        @Published var showAddAccountView = false
         @Published var cellModels = [AccountCellView.Model]()
         private var timer: Timer!
 

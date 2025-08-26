@@ -16,7 +16,17 @@ struct AccountsView: View {
             AccountCellView(model: model)
         }
         .listStyle(.grouped)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Add", systemImage: "plus.circle") {
+                    viewModel.showAddAccountView.toggle()
+                }
+            }
+        }
         .navigationTitle("Accounts")
+        .sheet(isPresented: $viewModel.showAddAccountView) {
+            AddAccountView(viewModel: .init(isPresented: $viewModel.showAddAccountView))
+        }
         .onAppear {
             viewModel.setup(with: store)
         }
