@@ -28,16 +28,10 @@ extension AddAccountView {
             isPresented = false
         }
 
-        func save() {
-            print("Done tapped!")
-            print("name: \(name)")
-            print("issuer: \(issuer)")
-            print("secret: \(secret)")
-            print("algorithm: \(algorithm)")
-            print("digits: \(digits)")
-            print("type: \(kind)")
-            print("period: \(period)")
-            print("counter: \(counter)")
+        func save(in store: Store) {
+            guard let password = Password(kind: kind, algorithm: algorithm, base32: secret, digits: digits) else { return }
+            let newAccount = Account(name: name, issuer: issuer, password: password)
+            store.appState.accounts.append(newAccount)
             isPresented = false
         }
     }

@@ -14,6 +14,21 @@ struct Password: Equatable {
     var secret: Data
     var digits: UInt = 6
 
+    init(kind: Kind, algorithm: Algorithm = .sha1, secret: Data, digits: UInt = 6) {
+        self.kind = kind
+        self.algorithm = algorithm
+        self.secret = secret
+        self.digits = digits
+    }
+
+    init?(kind: Kind, algorithm: Algorithm = .sha1, base32 secret: String, digits: UInt = 6) {
+        guard let secret = Data(base32Encoded: secret) else { return nil }
+        self.kind = kind
+        self.algorithm = algorithm
+        self.secret = secret
+        self.digits = digits
+    }
+
     func counter(at date: Date = Date.now) -> UInt {
         switch kind {
         case .hotp(let counter): counter

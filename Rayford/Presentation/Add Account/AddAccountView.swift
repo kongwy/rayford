@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AddAccountView: View {
+    @EnvironmentObject var store: Store
     @StateObject var viewModel: ViewModel
 
     var body: some View {
@@ -59,7 +60,7 @@ struct AddAccountView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        viewModel.save()
+                        viewModel.save(in: store)
                     }
                 }
             }

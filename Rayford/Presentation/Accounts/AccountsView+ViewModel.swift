@@ -22,14 +22,14 @@ extension AccountsView {
             store.publisher(\.accounts)
                 .combineLatest(passwordManager.passcodes, passwordManager.progresses, passwordManager.secondsRemainings)
                 .sink { [weak self] accounts, passcodes, progresses, secondsRemainings in
-                    self?.cellModels = accounts.map { account in
-                        guard let passcode = passcodes[account.id] else { assert(false) }
+                    self?.cellModels = accounts.compactMap { account in
+                        guard let passcode = passcodes[account.id] else { return nil }
                         let accessoryType: AccountCellView.AccessoryType
                         switch account.password.kind {
                         case .hotp:
                             accessoryType = .nextButton {}
                         case .totp:
-                            guard let progress = progresses[account.id], let secondsRemaining = secondsRemainings[account.id] else { assert(false) }
+                            guard let progress = progresses[account.id], let secondsRemaining = secondsRemainings[account.id] else { return nil }
                             accessoryType = .progressCircle(value: progress, text: "\(secondsRemaining)")
                         }
                         return AccountCellView.Model(id: account.id,

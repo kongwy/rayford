@@ -20,8 +20,8 @@ class PasswordManager {
     init(store: Store = .shared) {
         self.accounts = store.publisher(\.accounts)
 
-        self.counters = timer.combineLatest(accounts)
-            .map { now, accounts in
+        self.counters = accounts.combineLatest(timer)
+            .map { accounts, now in
                 accounts.reduce(into: [UUID : UInt]()) { result, account in
                     result[account.id] = account.password.counter(at: now)
                 }
@@ -29,8 +29,8 @@ class PasswordManager {
             .removeDuplicates()
             .eraseToAnyPublisher()
 
-        self.secondsRemainings = timer.combineLatest(accounts)
-            .map { now, accounts in
+        self.secondsRemainings = accounts.combineLatest(timer)
+            .map { accounts, now in
                 accounts
                     .filter { if case .totp = $0.password.kind { true } else { false } }
                     .reduce(into: [UUID : Int]()) { result, account in
@@ -40,8 +40,8 @@ class PasswordManager {
             .removeDuplicates()
             .eraseToAnyPublisher()
 
-        self.progresses = timer.combineLatest(accounts)
-            .map { now, accounts in
+        self.progresses = accounts.combineLatest(timer)
+            .map { accounts, now in
                 accounts
                     .filter { if case .totp = $0.password.kind { true } else { false } }
                     .reduce(into: [UUID : Double]()) { result, account in
@@ -53,9 +53,9 @@ class PasswordManager {
 
         self.passcodes = counters.combineLatest(accounts)
             .map { counters, accounts in
-                accounts.reduce(into: [UUID : String]()) { result, account in
-                    guard let counter = counters[account.id] else { assert(false) }
-                    result[account.id] = account.password.value(for: counter)
+                counters.reduce(into: [UUID : String]()) { result, counter in
+                    guard let value = accounts[id: counter.key]?.password.value(for: counter.value) else { return }
+                    result[counter.key] = value
                 }
             }
             .removeDuplicates()
