@@ -13,7 +13,7 @@ struct Account: Identifiable, Equatable {
     let id: UUID
     var name: String?
     var issuer: String?
-    let password: Password
+    var password: Password
 
     var displayName: String { [issuer, name].compactMap { $0 }.joined(separator: ": ") }
 

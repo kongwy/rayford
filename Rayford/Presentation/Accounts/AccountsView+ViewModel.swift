@@ -27,7 +27,9 @@ extension AccountsView {
                         let accessoryType: AccountCellView.AccessoryType
                         switch account.password.kind {
                         case .hotp:
-                            accessoryType = .nextButton {}
+                            accessoryType = .nextButton { [weak self] in
+                                self?.incrementCounter(for: account.id, in: store)
+                            }
                         case .totp:
                             guard let progress = progresses[account.id], let secondsRemaining = secondsRemainings[account.id] else { return nil }
                             accessoryType = .progressCircle(value: progress, text: "\(secondsRemaining)")
@@ -39,6 +41,12 @@ extension AccountsView {
                     }
                 }
                 .store(in: &cancellable)
+        }
+
+        private func incrementCounter(for id: UUID, in store: Store = .shared) {
+            store.appState.accounts.update(id: id) { account in
+                account.password.incrementCounter()
+            }
         }
     }
 }

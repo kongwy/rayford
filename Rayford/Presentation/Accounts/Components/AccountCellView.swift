@@ -38,16 +38,18 @@ struct AccountCellView: View {
             case let .progressCircle(value, text):
                 CircularProgressView(progress: value, text: text)
                     .frame(width: 30, height: 30)
-            case .nextButton:
-                Image(systemName: "arrowtriangle.forward.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .padding(10)
-                    .offset(x: 1)
-                    .frame(width: 28, height: 28)
-                    .foregroundStyle(.white)
-                    .background(.blue)
-                    .clipShape(Circle())
+            case let .nextButton(closure):
+                Button(action: closure) {
+                    Image(systemName: "arrowtriangle.forward.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .padding(10)
+                        .offset(x: 1)
+                        .frame(width: 28, height: 28)
+                        .foregroundStyle(.white)
+                        .background(.blue)
+                        .clipShape(Circle())
+                }
             }
         }
     }
@@ -74,6 +76,9 @@ extension AccountCellView {
     }
 }
 
-//#Preview {
-//    AccountCellView(account: mockState.accounts[0])
-//}
+#Preview {
+    AccountCellView(model: .init(id: UUID(),
+                                 passcode: "111111",
+                                 description: "Demo Issuer: Demo Account",
+                                 accessoryType: .progressCircle(value: 0, text: "0")))
+}

@@ -75,6 +75,10 @@ struct Password: Equatable {
         return timeIntervalRemaining(at: date) / Double(period)
     }
 
+    mutating func incrementCounter() {
+        if case let .hotp(counter) = kind { kind = .hotp(counter: counter + 1) }
+    }
+
     // MARK: - Initializer
 
     init(kind: Kind, algorithm: Algorithm? = nil, secret: Data, digits: UInt? = nil) {
