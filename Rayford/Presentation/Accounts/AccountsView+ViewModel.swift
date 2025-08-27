@@ -12,6 +12,8 @@ extension AccountsView {
     class ViewModel: ObservableObject {
         private var passwordManager: PasswordManager
 
+        @Published var presentDeleteAccountConfirmation = false
+        @Published var deletingAccountId: UUID? = nil
         @Published var presentEditAccountView = false
         @Published var editingAccountId: UUID? = nil
         @Published var presentAddAccountView = false
@@ -49,6 +51,24 @@ extension AccountsView {
             store.appState.accounts.update(id: id) { account in
                 account.password.incrementCounter()
             }
+        }
+
+        func presentDeleteAccountConfirmation(for id: UUID) {
+            deletingAccountId = id
+            presentDeleteAccountConfirmation = true
+        }
+
+        func deleteAccount(for id: UUID, in store: Store = .shared) {
+            store.appState.accounts.remove(id: id)
+        }
+
+        func presentEditAccountView(for id: UUID) {
+            editingAccountId = id
+            presentEditAccountView = true
+        }
+
+        func moveAccount(from source: IndexSet, to destination: Int, in store: Store = .shared) {
+            store.appState.accounts.move(fromOffsets: source, toOffset: destination)
         }
     }
 }

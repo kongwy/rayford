@@ -25,4 +25,8 @@ extension Array where Element: Identifiable {
             update(&self[index])
         }
     }
+
+    mutating func remove(id: Element.ID) {
+        removeAll { $0.id == id }
+    }
 }

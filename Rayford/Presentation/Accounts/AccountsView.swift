@@ -12,16 +12,50 @@ struct AccountsView: View {
     @StateObject private var viewModel = ViewModel()
 
     var body: some View {
-        List(viewModel.cellModels) { model in
-            AccountCellView(model: model)
-                .contextMenu {
-                    Button("Edit", systemImage: "pencil") {
-                        viewModel.editingAccountId = model.id
-                        viewModel.presentEditAccountView = true
+        List {
+            ForEach(viewModel.cellModels) { model in
+                AccountCellView(model: model)
+                    .contextMenu {
+                        Section {
+                            Button("Edit", systemImage: "square.and.pencil") {
+                                viewModel.presentEditAccountView(for: model.id)
+                            }
+                        }
+                        Section {
+                            Button("Delete", systemImage: "trash", role: .destructive) {
+                                viewModel.presentDeleteAccountConfirmation(for: model.id)
+                            }
+                        }
                     }
-                }
+                    .swipeActions {
+                        Button("Delete", systemImage: "trash") {
+                            viewModel.presentDeleteAccountConfirmation(for: model.id)
+                        }.tint(.red)
+
+                        Button("Edit", systemImage: "square.and.pencil") {
+                            viewModel.presentEditAccountView(for: model.id)
+                        }
+                    }
+            }
+            .onMove { source, destination in
+                viewModel.moveAccount(from: source, to: destination, in: store)
+            }
         }
         .listStyle(.grouped)
+        .confirmationDialog(
+            "Deleting This Account Will Not Turn Off Two-Factor Authentication",
+            isPresented: $viewModel.presentDeleteAccountConfirmation,
+            titleVisibility: .visible,
+            presenting: viewModel.deletingAccountId,
+            actions: { id in
+                Button("Delete Account", role: .destructive) {
+                    withAnimation {
+                        viewModel.deleteAccount(for: id, in: store)
+                    }
+                }
+            }, message: { _ in
+                Text("Please make sure two-factor authentication is turned off in the issuer's settings before deleting this account to prevent being locked out.")
+            })
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Add", systemImage: "plus.circle") {
