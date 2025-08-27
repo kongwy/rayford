@@ -40,7 +40,7 @@ extension AccountsView {
                         }
                         return AccountCellView.Model(id: account.id,
                                                      passcode: passcode,
-                                                     description: account.displayName,
+                                                     description: account.description,
                                                      accessoryType: accessoryType)
                     }
                 }

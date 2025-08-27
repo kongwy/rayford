@@ -15,7 +15,12 @@ struct Account: Identifiable, Equatable {
     var issuer: String?
     var password: Password
 
-    var displayName: String { [issuer, name].compactMap { $0 }.joined(separator: ": ") }
+    var description: String {
+        [issuer, name]
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: ": ")
+    }
 
     // MARK: - Initializer
 
