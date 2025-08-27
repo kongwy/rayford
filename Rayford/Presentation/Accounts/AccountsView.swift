@@ -15,13 +15,20 @@ struct AccountsView: View {
         List {
             ForEach(viewModel.cellModels) { model in
                 AccountCellView(model: model)
+                    .onTapGesture {
+                        UIPasteboard.general.string = model.passcode
+                        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                    }
                     .contextMenu {
+                        Section {
+                            Button("Copy", systemImage: "document.on.document") {
+                                UIPasteboard.general.string = model.passcode
+                            }
+                        }
                         Section {
                             Button("Edit", systemImage: "square.and.pencil") {
                                 viewModel.presentEditAccountView(for: model.id)
                             }
-                        }
-                        Section {
                             Button("Delete", systemImage: "trash", role: .destructive) {
                                 viewModel.presentDeleteAccountConfirmation(for: model.id)
                             }
