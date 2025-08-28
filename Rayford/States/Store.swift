@@ -33,14 +33,16 @@ extension Store {
     private static func saveState(_ appState: AppState) {
         saveKeychain(appState.accounts)
     }
-    
+
     private static func loadState() -> AppState {
-        AppState(accounts: loadKeychain())
+        Logger.main.log("Loading App State from storage...")
+        return AppState(accounts: loadKeychain())
     }
 }
 
 extension Store {
     private static let keychain = {
+        Logger.main.log("Setting up Keychain container...")
         let keychain = KeychainSwift()
         keychain.synchronizable = true
         return keychain
@@ -49,25 +51,39 @@ extension Store {
     private static let accountKeyPrefix = "Account_"
 
     private static func saveKeychain(_ accounts: [Account]) {
+        Logger.main.log("Saving \(accounts.count) account(s) to Keychain...")
         clearKeychain()
-        for account in accounts {
-            guard let jsonString = try! account.toJSON(formatted: false) else { continue }
-            keychain.set(jsonString, forKey: "\(accountKeyPrefix)\(account.id.uuidString)")
+        accounts.forEach {
+            do {
+                let jsonString = try $0.toJSON(formatted: false)
+                let result = keychain.set(jsonString, forKey: "\(accountKeyPrefix)\($0.id.uuidString)")
+                if !result { Logger.main.error("Failed to save account into Keychain: \($0.id.uuidString)") }
+            } catch {
+                Logger.main.error("Failed to serialize account: \($0.id.uuidString)")
+            }
         }
     }
 
     private static func loadKeychain() -> [Account] {
-        keychain.allKeys
-            .filter { $0.hasPrefix(accountKeyPrefix) }
-            .compactMap {
-                guard let jsonString = keychain.get($0) else { return nil }
-                return try! Account.fromJSON(jsonString)
+        let keys = keychain.allKeys.filter { $0.hasPrefix(accountKeyPrefix) }
+        Logger.main.log("Loading \(keys.count) account(s) from Keychain...")
+        return keys.compactMap {
+            guard let jsonString = keychain.get($0) else {
+                Logger.main.error("Failed to load account from Keychain: \($0)")
+                return nil
             }
+            do {
+                return try Account.fromJSON(jsonString)
+            } catch {
+                Logger.main.error("Failed to deserialize account: \($0)")
+                return nil
+            }
+        }
     }
 
     private static func clearKeychain() {
-        keychain.allKeys
-            .filter { $0.hasPrefix(accountKeyPrefix) }
-            .forEach { keychain.delete($0) }
+        let keys = keychain.allKeys.filter { $0.hasPrefix(accountKeyPrefix) }
+        Logger.main.log("Deleting \(keys.count) account(s) from Keychain...")
+        keys.forEach { keychain.delete($0) }
     }
 }
