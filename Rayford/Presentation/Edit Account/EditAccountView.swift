@@ -61,6 +61,6 @@ extension EditAccountView {
 
 #Preview {
     NavigationStack {
-        EditAccountView(viewModel: .init(account: mockState.accounts.randomElement()!))
+        EditAccountView(viewModel: .init(account: mockStore.appState.accounts.randomElement()!))
     }
 }

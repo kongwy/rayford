@@ -14,20 +14,21 @@ struct Password: Equatable {
     var secret: Data
     var digits: UInt = 6
 
-    init(kind: Kind, algorithm: Algorithm = .sha1, secret: Data, digits: UInt = 6) {
+    // MARK: - Initializers
+
+    init(kind: Kind, algorithm: Algorithm? = nil, secret: Data, digits: UInt? = nil) {
         self.kind = kind
-        self.algorithm = algorithm
+        self.algorithm = algorithm ?? .sha1
         self.secret = secret
-        self.digits = digits
+        self.digits = digits ?? 6
     }
 
-    init?(kind: Kind, algorithm: Algorithm = .sha1, base32 secret: String, digits: UInt = 6) {
+    init?(kind: Kind, algorithm: Algorithm? = nil, base32 secret: String, digits: UInt? = nil) {
         guard let secret = Data(base32Encoded: secret) else { return nil }
-        self.kind = kind
-        self.algorithm = algorithm
-        self.secret = secret
-        self.digits = digits
+        self.init(kind: kind, algorithm: algorithm, secret: secret, digits: digits)
     }
+
+    // MARK: - Computed Values
 
     func counter(at date: Date = Date.now) -> UInt {
         switch kind {
@@ -78,26 +79,60 @@ struct Password: Equatable {
     mutating func incrementCounter() {
         if case let .hotp(counter) = kind { kind = .hotp(counter: counter + 1) }
     }
+}
 
-    // MARK: - Initializer
+// MARK: - Codable
 
-    init(kind: Kind, algorithm: Algorithm? = nil, secret: Data, digits: UInt? = nil) {
-        self.kind = kind
-        self.algorithm = algorithm ?? .sha1
-        self.secret = secret
-        self.digits = digits ?? 6
+extension Password: Codable, JSONConvertible {
+    enum CodingKeys: String, CodingKey {
+        case kind = "type"
+        case counter
+        case period
+        case algorithm
+        case secret
+        case digits
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self.kind {
+        case let .hotp(counter):
+            try container.encode("hotp", forKey: .kind)
+            try container.encode(counter, forKey: .counter)
+        case let .totp(period):
+            try container.encode("totp", forKey: .kind)
+            try container.encode(period, forKey: .period)
+        }
+        try container.encode(algorithm, forKey: .algorithm)
+        try container.encode(secret, forKey: .secret)
+        try container.encode(digits, forKey: .digits)
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let typeString = try container.decode(String.self, forKey: .kind)
+        switch typeString {
+        case "hotp": kind = .hotp(counter: try container.decode(UInt.self, forKey: .counter))
+        case "totp": kind = .totp(period: try container.decode(UInt.self, forKey: .period))
+        default: throw DecodingError.dataCorruptedError(forKey: .kind, in: container, debugDescription: "Unknown type: \(typeString)")
+        }
+        algorithm = try container.decode(Algorithm.self, forKey: .algorithm)
+        secret = try container.decode(Data.self, forKey: .secret)
+        digits = try container.decode(UInt.self, forKey: .digits)
     }
 }
+
+// MARK: - Support Types
 
 enum Kind: Equatable, Hashable {
     case hotp(counter: UInt)
     case totp(period: UInt = 30)
 }
 
-enum Algorithm: Equatable {
-    case sha1
-    case sha256
-    case sha512
+enum Algorithm: String, Equatable, Codable {
+    case sha1 = "sha1"
+    case sha256 = "sha256"
+    case sha512 = "sha512"
 
     init?(string: String) {
         switch string.lowercased() {

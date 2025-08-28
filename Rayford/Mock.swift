@@ -7,7 +7,7 @@
 
 import Foundation
 
-var mockState = AppState(
+var mockStore = Store(appState: AppState(
     accounts: [
         Account(url: URL(string: "otpauth://totp/Example%20Co:alice%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=Example%20Co")!)!,
         Account(url: URL(string: "otpauth://totp/GitHub:weiyi.k?secret=JBSWY3DPEHPK3PXP&issuer=GitHub&algorithm=SHA256&digits=8")!)!,
@@ -19,6 +19,4 @@ var mockState = AppState(
         Account(url: URL(string: "otpauth://totp/Gmail%20(Personal):davis.k%40example.com?secret=ONSWG4TFOQ======&issuer=Gmail")!)!,
         Account(url: URL(string: "otpauth://totp/Custom%20App:user123?secret=KRSXG5A=&issuer=Custom%20App&digits=7")!)!,
     ]
-)
-
-var mockStore = Store()
+))

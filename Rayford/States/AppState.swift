@@ -8,5 +8,7 @@
 import Foundation
 
 struct AppState: Equatable {
+    var version: Int = 1
+
     var accounts: [Account]
 }

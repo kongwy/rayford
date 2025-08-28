@@ -9,7 +9,7 @@ import Foundation
 
 // Ref: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 
-struct Account: Identifiable, Equatable {
+struct Account: Identifiable, Equatable, JSONConvertible {
     let id: UUID
     var name: String?
     var issuer: String?
@@ -22,7 +22,7 @@ struct Account: Identifiable, Equatable {
             .joined(separator: ": ")
     }
 
-    // MARK: - Initializer
+    // MARK: - Initializers
 
     init(id: UUID = UUID(), name: String? = nil, issuer: String? = nil, password: Password) {
         self.id = id
@@ -76,5 +76,32 @@ struct Account: Identifiable, Equatable {
         if let digits, digits < 6 || digits > 9 { return nil }
 
         password = Password(kind: kind, algorithm: algorithm, secret: secret, digits: digits)
+    }
+}
+
+// MARK: - Codable
+
+extension Account: Codable {
+    private enum CodingKeys: CodingKey {
+        case id
+        case name
+        case issuer
+        case password
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.name = try container.decodeIfPresent(String.self, forKey: .name)
+        self.issuer = try container.decodeIfPresent(String.self, forKey: .issuer)
+        self.password = try container.decode(Password.self, forKey: .password)
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encodeIfPresent(self.name, forKey: .name)
+        try container.encodeIfPresent(self.issuer, forKey: .issuer)
+        try container.encode(self.password, forKey: .password)
     }
 }
