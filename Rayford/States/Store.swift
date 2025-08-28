@@ -40,15 +40,13 @@ extension Store {
 }
 
 extension Store {
-    private static let keychain = KeychainSwift()
+    private static let keychain = {
+        let keychain = KeychainSwift()
+        keychain.synchronizable = true
+        return keychain
+    }()
 
     private static let accountKeyPrefix = "Account_"
-
-    private static func clearKeychain() {
-        keychain.allKeys
-            .filter { $0.hasPrefix(accountKeyPrefix) }
-            .forEach { keychain.delete($0) }
-    }
 
     private static func saveKeychain(_ accounts: [Account]) {
         clearKeychain()
@@ -65,5 +63,11 @@ extension Store {
                 guard let jsonString = keychain.get($0) else { return nil }
                 return try! Account.fromJSON(jsonString)
             }
+    }
+
+    private static func clearKeychain() {
+        keychain.allKeys
+            .filter { $0.hasPrefix(accountKeyPrefix) }
+            .forEach { keychain.delete($0) }
     }
 }
