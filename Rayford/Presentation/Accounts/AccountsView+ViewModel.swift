@@ -14,9 +14,13 @@ extension AccountsView {
 
         @Published var presentDeleteAccountConfirmation = false
         @Published var deletingAccountId: UUID? = nil
+
         @Published var presentEditAccountView = false
         @Published var editingAccountId: UUID? = nil
+
+        @Published var presentAddAccountConfirmation = false
         @Published var presentAddAccountView = false
+
         @Published var cellModels = [AccountCellView.Model]()
 
         private var cancellable = Set<AnyCancellable>()

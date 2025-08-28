@@ -26,10 +26,24 @@ struct AccountsView: View {
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .confirmationDialog(
+                "Add Account",
+                isPresented: $viewModel.presentAddAccountConfirmation,
+                titleVisibility: .visible,
+                actions: {
+                    Button("Scan QR Code") { }
+                    Button("Import QR Image") { }
+                    Button("Enter Manually") {
+                        viewModel.presentAddAccountView = true
+                    }
+                },
+                message: {
+                    Text("Add an account by scanning a QR code, importing a QR image, or entering a secret manually.")
+                })
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Add", systemImage: "plus.circle") {
-                        viewModel.presentAddAccountView = true
+                        viewModel.presentAddAccountConfirmation = true
                     }
                 }
             }
@@ -89,10 +103,24 @@ struct AccountsView: View {
                 }, message: { _ in
                     Text("Please make sure two-factor authentication is turned off in the issuer's settings before deleting this account to prevent being locked out.")
                 })
+            .confirmationDialog(
+                "Add Account",
+                isPresented: $viewModel.presentAddAccountConfirmation,
+                titleVisibility: .visible,
+                actions: {
+                    Button("Scan QR Code") { }
+                    Button("Import QR Image") { }
+                    Button("Enter Manually") {
+                        viewModel.presentAddAccountView = true
+                    }
+                },
+                message: {
+                    Text("Add an account by scanning a QR code, importing a QR image, or entering a secret manually.")
+                })
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Add", systemImage: "plus.circle") {
-                        viewModel.presentAddAccountView = true
+                        viewModel.presentAddAccountConfirmation = true
                     }
                 }
             }
