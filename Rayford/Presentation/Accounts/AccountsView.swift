@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct AccountsView: View {
     @EnvironmentObject var store: Store
@@ -78,12 +79,20 @@ struct AccountsView: View {
                         }
                     }, message: { _ in
                         Text("Please make sure two-factor authentication is turned off in the issuer's settings before deleting this account to prevent being locked out.")
-                    })
+                    }
+                )
                 .navigationDestination(isPresented: $viewModel.presentEditAccountView) {
                     if let accountId = viewModel.editingAccountId,
                        let viewModel = EditAccountView.ViewModel(id: accountId, in: store) {
                         EditAccountView(viewModel: viewModel)
                     }
+                }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Add", systemImage: "plus.circle") {
+                    viewModel.presentAddAccountConfirmation = true
                 }
             }
         }
@@ -93,25 +102,21 @@ struct AccountsView: View {
             titleVisibility: .visible,
             actions: {
                 Button("Scan QR Code") { }
-                Button("Import QR Image") { }
-                Button("Enter Manually") {
-                    viewModel.presentAddAccountView = true
-                }
+                Button("Import QR Image") { viewModel.presentPhotoPicker = true }
+                Button("Enter Manually") { viewModel.presentAddAccountView = true }
             },
             message: {
                 Text("Add an account by scanning a QR code, importing a QR image, or entering a secret manually.")
-            })
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Add", systemImage: "plus.circle") {
-                    viewModel.presentAddAccountConfirmation = true
-                }
             }
-        }
-        .navigationTitle("Accounts")
+        )
+        .photosPicker(isPresented: $viewModel.presentPhotoPicker,
+                      selection: $viewModel.pickedImageItem,
+                      matching: .images,
+                      preferredItemEncoding: .automatic)
         .sheet(isPresented: $viewModel.presentAddAccountView) {
             AddAccountView()
         }
+        .navigationTitle("Accounts")
     }
 }
 
