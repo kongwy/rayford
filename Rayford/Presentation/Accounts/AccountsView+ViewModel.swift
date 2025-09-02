@@ -9,6 +9,7 @@ import SwiftUI
 import Combine
 import PhotosUI
 import Vision
+import CombineExt
 
 extension AccountsView {
     class ViewModel: ObservableObject {
@@ -24,9 +25,9 @@ extension AccountsView {
         @Published var presentAddAccountView = false
         @Published var presentPhotoPicker = false
         @Published var pickedImageItem: PhotosPickerItem? = nil
-        @Published private var pickedImageState: PhotosPickerItemState = .idle
-
         @Published var cellModels = [AccountCellView.Model]()
+
+        private var qrImageDetectionStatus = CurrentValueRelay<Status<Progress, [Account], Error>>(.idle)
 
         private var cancellable = Set<AnyCancellable>()
 
@@ -34,38 +35,41 @@ extension AccountsView {
             passwordManager = PasswordManager(store: store)
             store.publisher(\.accounts)
                 .combineLatest(passwordManager.passcodes, passwordManager.progresses, passwordManager.secondsRemainings)
-                .sink { [weak self] accounts, passcodes, progresses, secondsRemainings in
-                    guard let self else { return }
-                    self.updateCellStates(accounts: accounts,
+                .compactMap { [weak self] accounts, passcodes, progresses, secondsRemainings in
+                    self?.composeCellStates(accounts: accounts,
                                           passcodes: passcodes,
                                           progresses: progresses,
                                           secondsRemainings: secondsRemainings,
                                           in: store)
                 }
-                .store(in: &cancellable)
+                .receive(on: DispatchQueue.main)
+                .assign(to: &$cellModels)
 
             $pickedImageItem
                 .sink { [weak self] item in
                     guard let self else { return }
-                    self.received(pickedImageItem: item)
+                    self.received(photosPickerItem: item)
                 }
                 .store(in: &cancellable)
-            $pickedImageState
-                .sink { [weak self] state in
-                    guard let self else { return }
-                    self.received(pickedImageState: state, store: store)
+
+            qrImageDetectionStatus
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] status in
+                    if let self, case let .success(accounts) = status {
+                        accounts.forEach { self.save(account: $0, in: store) }
+                    }
                 }
                 .store(in: &cancellable)
         }
 
         // MARK: - Cell Models Data Flow
 
-        private func updateCellStates(accounts: [Account],
-                                      passcodes: [UUID : String],
-                                      progresses: [UUID : Double],
-                                      secondsRemainings: [UUID : Int],
-                                      in store: Store = .shared) {
-            cellModels = accounts.compactMap { account in
+        private func composeCellStates(accounts: [Account],
+                                       passcodes: [UUID : String],
+                                       progresses: [UUID : Double],
+                                       secondsRemainings: [UUID : Int],
+                                       in store: Store = .shared) -> [AccountCellView.Model] {
+            accounts.compactMap { account in
                 guard let passcode = passcodes[account.id] else { return nil }
                 let accessoryType: AccountCellView.AccessoryType
                 switch account.password.kind {
@@ -88,45 +92,40 @@ extension AccountsView {
 
         // MARK: - Photo Picker
 
-        private func received(pickedImageItem item: PhotosPickerItem?) {
-            if case let .loading(progress) = pickedImageState { progress.cancel() }
-            guard let item else { self.pickedImageState = .idle; return }
-            self.pickedImageState = .loading(item.loadTransferable(type: Data.self) { result in
-                let imageResult = result.map { $0.flatMap { UIImage(data: $0)?.cgImage } }
-                switch imageResult {
-                case let .success(cgImage?):
-                    self.pickedImageState = .success(cgImage)
-                case .success(nil):
-                    self.pickedImageState = .idle
-                case let .failure(error):
-                    self.pickedImageState = .failure(error)
+        private func received(photosPickerItem item: PhotosPickerItem?) {
+            if case let .progress(progress) = qrImageDetectionStatus.value { progress.cancel() }
+            guard let item else { qrImageDetectionStatus.accept(.idle); return }
+            let progress = item.loadTransferable(type: Data.self) { [weak self] result in
+                guard let self else { return }
+                let postprocessResult: Result<[Account], Error> = result.flatMap { data in
+                    guard let data else { return .failure(ConversionError.noData) }
+                    guard let cgImage = UIImage(data: data)?.cgImage else { return .failure(ConversionError.coruptedData) }
+                    do {
+                        return .success(try self.detect(qrcode: cgImage))
+                    } catch {
+                        return .failure(error)
+                    }
                 }
-            })
+                qrImageDetectionStatus.accept(postprocessResult.status())
+            }
+            qrImageDetectionStatus.accept(.progress(progress))
         }
 
-        private func received(pickedImageState state: PhotosPickerItemState, store: Store = .shared) {
-            switch state {
-            case let .success(cgImage):
-                detect(qrcode: cgImage).forEach { save(account: $0, in: store) }
-            case .idle, .loading(_), .failure(_): break
-            }
+        enum ConversionError: Error {
+            case noData
+            case coruptedData
         }
 
-        private func detect(qrcode cgImage: CGImage) -> [Account] {
-            do {
-                let qrcodeRequest = VNDetectBarcodesRequest()
-                qrcodeRequest.symbologies = [.qr]
-                let handler = VNImageRequestHandler(cgImage: cgImage)
-                try handler.perform([qrcodeRequest])
-                return (qrcodeRequest.results ?? [])
-                    .sorted { $0.confidence > $1.confidence }
-                    .compactMap { $0.payloadStringValue?.trimmingCharacters(in: .whitespacesAndNewlines) }
-                    .compactMap { URL(string: $0) }
-                    .compactMap { Account(url: $0) }
-            } catch {
-                Logger.main.error("Failed to detect QR Code: \(error.localizedDescription)")
-                return []
-            }
+        private func detect(qrcode cgImage: CGImage) throws -> [Account] {
+            let qrcodeRequest = VNDetectBarcodesRequest()
+            qrcodeRequest.symbologies = [.qr]
+            let handler = VNImageRequestHandler(cgImage: cgImage)
+            try handler.perform([qrcodeRequest])
+            return (qrcodeRequest.results ?? [])
+                .sorted { $0.confidence > $1.confidence }
+                .compactMap { $0.payloadStringValue?.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .compactMap { URL(string: $0) }
+                .compactMap { Account(url: $0) }
         }
 
         // MARK: - Private Methods
