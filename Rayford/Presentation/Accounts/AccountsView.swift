@@ -43,7 +43,7 @@ struct AccountsView: View {
         Group {
             switch viewModel.cellModels {
             case .none: loadingPlaceholder
-            case let .some(models) where models.isEmpty: loadingPlaceholder
+            case let .some(models) where models.isEmpty: emptyPlaceholder
             case let .some(models):
                 List {
                     ForEach(models) { model in
