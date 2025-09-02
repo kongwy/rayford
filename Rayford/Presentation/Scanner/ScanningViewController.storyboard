@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="SjS-Q1-pNZ">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Add Account-->
+        <scene sceneID="VfC-ta-20B">
+            <objects>
+                <viewController id="SjS-Q1-pNZ" customClass="ScanningViewController" customModule="Rayford" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="OHl-Uc-cdR"/>
+                        <viewControllerLayoutGuide type="bottom" id="kRH-8U-aOD"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="87h-Zs-Z8S">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fPo-RC-h98">
+                                <rect key="frame" x="16" y="382.66666666666669" width="361" height="86.666666666666686"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To add an account by scanning a QR code, please allow Tofu to access your camera in the Settings application." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="55d-XK-Yzx">
+                                        <rect key="frame" x="0.0" y="45" width="361" height="33.666666666666657"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Camera Access" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sbT-TK-Fof">
+                                        <rect key="frame" x="8" y="8" width="345" height="29"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                        <color key="textColor" systemColor="secondaryLabelColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="55d-XK-Yzx" firstAttribute="top" secondItem="sbT-TK-Fof" secondAttribute="bottom" constant="8" id="K4y-Xs-u8x"/>
+                                    <constraint firstItem="55d-XK-Yzx" firstAttribute="leading" secondItem="fPo-RC-h98" secondAttribute="leading" id="aZ0-1r-fEB"/>
+                                    <constraint firstItem="sbT-TK-Fof" firstAttribute="top" secondItem="fPo-RC-h98" secondAttribute="topMargin" id="klI-wi-Xhp"/>
+                                    <constraint firstItem="sbT-TK-Fof" firstAttribute="leading" secondItem="fPo-RC-h98" secondAttribute="leadingMargin" id="ne8-j7-dtb"/>
+                                    <constraint firstAttribute="bottomMargin" secondItem="55d-XK-Yzx" secondAttribute="bottom" id="v5S-Qb-37M"/>
+                                    <constraint firstAttribute="trailing" secondItem="55d-XK-Yzx" secondAttribute="trailing" id="wN0-yQ-M5k"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="sbT-TK-Fof" secondAttribute="trailing" id="wSV-na-mbj"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="mYg-W3-Fe4"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="fPo-RC-h98" firstAttribute="leading" secondItem="87h-Zs-Z8S" secondAttribute="leadingMargin" id="DJH-5S-lkI"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="fPo-RC-h98" secondAttribute="trailing" id="dhA-Vh-mLl"/>
+                            <constraint firstItem="fPo-RC-h98" firstAttribute="centerY" secondItem="87h-Zs-Z8S" secondAttribute="centerY" id="qY6-VE-RgD"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Add Account" id="7p1-6x-e4D">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="agA-XC-z2J">
+                            <connections>
+                                <action selector="didPressCancel:" destination="SjS-Q1-pNZ" id="5yP-jt-ygk"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="allowCameraAccessView" destination="fPo-RC-h98" id="oSg-Fj-pQM"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ML1-8n-fy6" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3092.3664122137402" y="95.774647887323951"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

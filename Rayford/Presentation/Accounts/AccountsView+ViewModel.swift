@@ -23,6 +23,7 @@ extension AccountsView {
 
         @Published var presentAddAccountConfirmation = false
         @Published var presentAddAccountView = false
+        @Published var presentScannerView = false
         @Published var presentPhotoPicker = false
         @Published var pickedImageItem: PhotosPickerItem? = nil
         @Published var cellModels: [AccountCellView.Model]? = nil

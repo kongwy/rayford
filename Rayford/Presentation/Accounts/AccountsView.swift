@@ -117,7 +117,7 @@ struct AccountsView: View {
             isPresented: $viewModel.presentAddAccountConfirmation,
             titleVisibility: .visible,
             actions: {
-                Button("Scan QR Code") { }
+                Button("Scan QR Code") { viewModel.presentScannerView = true }
                 Button("Import QR Image") { viewModel.presentPhotoPicker = true }
                 Button("Enter Manually") { viewModel.presentAddAccountView = true }
             },
@@ -125,6 +125,9 @@ struct AccountsView: View {
                 Text("Add an account by scanning a QR code, importing a QR image, or entering a secret manually.")
             }
         )
+        .sheet(isPresented: $viewModel.presentScannerView) {
+            ScannerView().ignoresSafeArea(.container, edges: .bottom)
+        }
         .photosPicker(isPresented: $viewModel.presentPhotoPicker,
                       selection: $viewModel.pickedImageItem,
                       matching: .images,
