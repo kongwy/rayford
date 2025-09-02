@@ -25,7 +25,7 @@ extension AccountsView {
         @Published var presentAddAccountView = false
         @Published var presentPhotoPicker = false
         @Published var pickedImageItem: PhotosPickerItem? = nil
-        @Published var cellModels = [AccountCellView.Model]()
+        @Published var cellModels: [AccountCellView.Model]? = nil
 
         private var qrImageDetectionStatus = CurrentValueRelay<Status<Progress, [Account], Error>>(.idle)
 

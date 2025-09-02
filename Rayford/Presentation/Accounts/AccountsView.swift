@@ -12,25 +12,41 @@ struct AccountsView: View {
     @EnvironmentObject var store: Store
     @StateObject private var viewModel = ViewModel()
 
+    var loadingPlaceholder: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .controlSize(.large)
+            Text("Loading...")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    var emptyPlaceholder: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "key.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.gray)
+            Text("No Accounts")
+                .font(.headline)
+                .foregroundColor(.gray)
+            Text("Add one by tapping the add button in the upper right corner.")
+                .multilineTextAlignment(.center)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     var body: some View {
         Group {
-            if viewModel.cellModels.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "key.fill")
-                        .font(.system(size: 48))
-                        .foregroundColor(.gray)
-                    Text("No Accounts")
-                        .font(.headline)
-                        .foregroundColor(.gray)
-                    Text("Add one by tapping the add button in the upper right corner.")
-                        .multilineTextAlignment(.center)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
+            switch viewModel.cellModels {
+            case .none: loadingPlaceholder
+            case let .some(models) where models.isEmpty: loadingPlaceholder
+            case let .some(models):
                 List {
-                    ForEach(viewModel.cellModels) { model in
+                    ForEach(models) { model in
                         AccountCellView(model: model)
                             .onTapGesture {
                                 UIPasteboard.general.string = model.passcode
