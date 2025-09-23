@@ -44,7 +44,6 @@ extension Store {
     private static let keychain = {
         Logger.main.log("Setting up Keychain container...")
         let keychain = KeychainSwift()
-        keychain.synchronizable = true
         return keychain
     }()
 
